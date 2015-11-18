@@ -2,7 +2,6 @@
 ;; BehaviorSpace: report pseudo-equil abundance in every patch, given its 'env' value.
 ;; Figure out how/when 'dominant?' switch is going to work
 ;; Include at least the first dispersal strategy: habitat selection
-;; Lifespans: must have multiple broods, to ensure potential pop. growth
 
 breed [skimmers skimmer]
 
@@ -81,8 +80,10 @@ end
 
 to breeding
   ask skimmers [
-    hatch 1
-    [ set health init-health ]
+    hatch 1 [
+      set health init-health
+      set trait (random-normal trait 1)
+       ]
   ]
 end
 @#$#@#$#@
@@ -171,7 +172,7 @@ init-health
 init-health
 10
 100
-50
+10
 10
 1
 NIL
