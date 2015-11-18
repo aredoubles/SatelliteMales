@@ -1,25 +1,34 @@
+;; TODO
+;; BehaviorSpace: report pseudo-equil abundance in every patch, given its 'env' value.
+;; Figure out how/when 'dominant?' switch is going to work
+;; Include at least the first dispersal strategy: habitat selection
+;; Lifespans: must have multiple broods, to ensure potential pop. growth
+
 breed [skimmers skimmer]
 
 skimmers-own [trait health dominant?]
-patches-own [env]
+patches-own [env equil-abund] ;;equil-abund will be the pseudo-equilibrium abundance at each patch, over time
 
 to setup
   ca
   ask patches [
-    set env random 20
+    set env random 10 ;; Number of suitability bins/levels
     set pcolor scale-color 53 env -10 30
   ]
 
-  create-skimmers 200 [
+  create-skimmers 300 [
     setxy random-xcor random-ycor
-    set size 1
+    set size 2
     set shape "dragonfly"
-    set trait random 20
-    set health 20 ;; Will for sure need to update this, based on what worked for SBD
-    ;; health so that they have lifespans, and costs of losing/dispersing
+    set trait random 20 ;; Sets hierarchy, heritability. Evolution?
+    set color 46
+    set health init-health ;; Will for sure need to update this, based on what worked for SBD
+    ;; 'health' so that they have lifespans, and costs of losing/dispersing
     ;; May HUGELY favor dominants, satellites could be super ephemeral
     set dominant? true
   ]
+
+  reset-ticks
 end
 
 to go
@@ -38,23 +47,43 @@ to battles
     let overcap ((count skimmers-here) - carrying-cap)
     if overcap > 0 [
       ask min-n-of overcap skimmers-here [trait] [set dominant? false]
-    ;; Is that [trait] box correctly used?
     ]
+  ]
+
+  ask skimmers with [dominant? = false] [
+    set health health - 5
+  ]
+
+  ask skimmers with [dominant? = true] [
+    set health health - 2
   ]
 end
 
 to dispersal
     ;; So what are all of my different strategies?
     ;; Make UI switches for each? And put in their own procedure too?
+    if hab-sel = true [
+      ask skimmers with [dominant? = false] [
+        fd 1 ;; change this eventually to hab-sel, from prev model.
+      ]
+    ]
     ask skimmers [set dominant? true]
     ;; Is this timing correct? How to avoid extra males coming in underneath K?
     ;; Kinda depends on the dispersal strategy?
 end
 
 to endoflife
+  ask skimmers [
+    if health < 0 [
+      die ]
+  ]
 end
 
 to breeding
+  ask skimmers [
+    hatch 1
+    [ set health init-health ]
+  ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -132,6 +161,50 @@ carrying-cap
 1
 NIL
 HORIZONTAL
+
+SLIDER
+25
+227
+197
+260
+init-health
+init-health
+10
+100
+50
+10
+1
+NIL
+HORIZONTAL
+
+SWITCH
+25
+281
+129
+314
+hab-sel
+hab-sel
+0
+1
+-1000
+
+PLOT
+662
+14
+862
+164
+pop-size
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot count turtles"
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -253,6 +326,16 @@ dot
 false
 0
 Circle -7500403 true true 90 90 120
+
+dragonfly
+true
+0
+Polygon -13791810 true false 150 60 135 75 138 284 150 296 162 286 165 75
+Polygon -7500403 true true 136 95 120 90 105 90 90 90 75 90 30 90 15 105 15 120 45 120 75 120 135 120
+Polygon -7500403 true true 30 135 15 165 60 180 90 180 120 180 135 165 135 135
+Polygon -7500403 true true 164 95 180 90 195 90 210 90 225 90 270 90 285 105 285 120 255 120 225 120 165 120
+Rectangle -7500403 true true 120 60 180 75
+Polygon -7500403 true true 270 135 285 165 240 180 210 180 180 180 165 165 165 135
 
 face happy
 false
