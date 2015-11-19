@@ -19,9 +19,9 @@ to setup
     setxy random-xcor random-ycor
     set size 2
     set shape "dragonfly"
-    set trait random 20 ;; Sets hierarchy, heritability. Evolution?
+    set trait random 10 ;; Sets hierarchy, heritability. Evolution?
     set color 46
-    set health init-health ;; Will for sure need to update this, based on what worked for SBD
+    set health init-health
     ;; 'health' so that they have lifespans, and costs of losing/dispersing
     ;; May HUGELY favor dominants, satellites could be super ephemeral
     set dominant? true
@@ -33,7 +33,7 @@ end
 to go
   battles
   dispersal
-  endoflife
+  selection
   breeding
 
   tick
@@ -44,8 +44,11 @@ to battles
 
   ask patches [
     let overcap ((count skimmers-here) - carrying-cap)
-    if overcap > 0 [
+    if (overcap > 0) and (ignore-indivs = false) [
       ask min-n-of overcap skimmers-here [trait] [set dominant? false]
+    ]
+    if (overcap > 0) and (ignore-indivs = true) [
+      ask n-of overcap skimmers-here [set dominant? false]
     ]
   ]
 
@@ -61,19 +64,68 @@ end
 to dispersal
     ;; So what are all of my different strategies?
     ;; Make UI switches for each? And put in their own procedure too?
-    if hab-sel = true [
+
+    if (avoid-crowds = true) and (patch-sens = true) [
+      ;; Best habitat selection (among neighbors)
+      ;; Currently, this is just code for best env
+      ;; How to ALSO do least crowded?
+      ask skimmers with [dominant? = false] [
+        let best-target min-one-of patches in-radius 1 [env]
+        if ([env] of best-target) < ([env] of patch-here) [
+          face best-target
+          forward 1
+        ]
+      ]
+    ]
+
+    if (avoid-crowds = true) and (patch-sens = false) [
+      ;; Pick a random uncrowded patch (that neighbors)
       ask skimmers with [dominant? = false] [
         fd 1 ;; change this eventually to hab-sel, from prev model.
       ]
     ]
+
+    if (avoid-crowds = false) and (patch-sens = true) [
+      ;; Pick a good neighbor patch, even if it's crowded
+      ;; This seems like a very poor strategy, ignore somehow?
+      ask skimmers with [dominant? = false] [
+        ask skimmers with [dominant? = false] [
+        let best-target min-one-of patches in-radius 1 [env]
+        if ([env] of best-target) < ([env] of patch-here) [
+          face best-target
+          forward 1
+        ]
+      ]
+    ]
+
+    if (avoid-crowds = false) and (patch-sens = false) [
+      ;; Random dispersal
+      ask skimmers with [dominant? = false] [
+        fd 1 ;; change this eventually to hab-sel, from prev model.
+      ]
+    ]
+
+    if ignore-indivs = true [
+      ;; Make everyone disperse randomly, regardless of dominance status
+      ;; Do enforce the carrying capacity, set losers as satellites, but losers have nothing to do with traits
+      ask skimmers with [dominant? = false] [
+        fd 1 ;; Pick a random neighbor, and go there
+      ]
+    ]
+
     ask skimmers [set dominant? true]
     ;; Is this timing correct? How to avoid extra males coming in underneath K?
     ;; Kinda depends on the dispersal strategy?
 end
 
-to endoflife
+to selection
   ask skimmers [
-    if health < 0 [
+    ;; Health affected by match with env. The worse the match, the more health lost
+    ;set health (health - abs(trait - env))
+    ;; But I need to limit this to the ideal patches (5)...
+    set health (health - abs(5 - ([env] of patch-here)))
+    ;; If enough health lost, die
+    if health <= 0 [
       die ]
   ]
 end
@@ -82,6 +134,7 @@ to breeding
   ask skimmers [
     hatch 1 [
       set health init-health
+      ;; Offspring differ from parents just slightly (how necessary is this?)
       set trait (random-normal trait 1)
        ]
   ]
@@ -180,12 +233,12 @@ HORIZONTAL
 
 SWITCH
 25
-281
-129
 314
-hab-sel
-hab-sel
-0
+152
+347
+patch-sens
+patch-sens
+1
 1
 -1000
 
@@ -206,6 +259,28 @@ false
 "" ""
 PENS
 "default" 1.0 0 -16777216 true "" "plot count turtles"
+
+SWITCH
+25
+275
+167
+308
+avoid-crowds
+avoid-crowds
+1
+1
+-1000
+
+SWITCH
+23
+357
+164
+390
+ignore-indivs
+ignore-indivs
+1
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?
