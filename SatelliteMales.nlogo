@@ -13,14 +13,18 @@ to setup
   ask patches [
     set env random 10 ;; Number of suitability bins/levels
     set pcolor scale-color 53 env -10 30
+    if env = 5 [
+      set pcolor red + 1
+    ]
   ]
 
   create-skimmers 300 [
     setxy random-xcor random-ycor
+    set heading 0
     set size 2
     set shape "dragonfly"
     set trait random 10 ;; Sets hierarchy, heritability. Evolution?
-    set color 46
+    set color 47
     set health init-health
     ;; 'health' so that they have lifespans, and costs of losing/dispersing
     ;; May HUGELY favor dominants, satellites could be super ephemeral
@@ -46,18 +50,25 @@ to battles
     let overcap ((count skimmers-here) - carrying-cap)
     if (overcap > 0) and (ignore-indivs = false) [
       ask min-n-of overcap skimmers-here [trait] [set dominant? false]
+      ask max-n-of carrying-cap skimmers-here [trait] [set dominant? true]
     ]
     if (overcap > 0) and (ignore-indivs = true) [
       ask n-of overcap skimmers-here [set dominant? false]
+      ask n-of carrying-cap skimmers-here [set dominant? true]
+    ]
+    if (overcap <= 0) [
+      ask skimmers-here [set dominant? true]
     ]
   ]
 
   ask skimmers with [dominant? = false] [
     set health health - 5
+    set color 44
   ]
 
   ask skimmers with [dominant? = true] [
     set health health - 2
+    set color 47
   ]
 end
 
@@ -67,21 +78,19 @@ to dispersal
 
     if (avoid-crowds = true) and (patch-sens = true) [
       ;; Best habitat selection (among neighbors)
-      ;; Currently, this is just code for best env
-      ;; How to ALSO do least crowded?
       ask skimmers with [dominant? = false] [
-        let best-target min-one-of patches in-radius 1 [env]
-        if ([env] of best-target) < ([env] of patch-here) [
-          face best-target
-          forward 1
+        let open-patch patches in-radius 2 with [(count skimmers-here) < carrying-cap]
+        let best-target min-one-of open-patch [abs(5 - env)]
+        face best-target
+        move-to best-target
         ]
       ]
-    ]
 
     if (avoid-crowds = true) and (patch-sens = false) [
       ;; Pick a random uncrowded patch (that neighbors)
       ask skimmers with [dominant? = false] [
-        fd 1 ;; change this eventually to hab-sel, from prev model.
+        let open-patch patches in-radius 2 with [(count skimmers-here) < carrying-cap]
+        move-to one-of open-patch
       ]
     ]
 
@@ -89,19 +98,17 @@ to dispersal
       ;; Pick a good neighbor patch, even if it's crowded
       ;; This seems like a very poor strategy, ignore somehow?
       ask skimmers with [dominant? = false] [
-        ask skimmers with [dominant? = false] [
-        let best-target min-one-of patches in-radius 1 [env]
-        if ([env] of best-target) < ([env] of patch-here) [
-          face best-target
-          forward 1
-        ]
+        let best-target max-one-of patches in-radius 2 [abs(5 - env)]
+        face best-target
+        move-to best-target
       ]
     ]
 
     if (avoid-crowds = false) and (patch-sens = false) [
       ;; Random dispersal
       ask skimmers with [dominant? = false] [
-        fd 1 ;; change this eventually to hab-sel, from prev model.
+        set heading random 360
+        fd random 2 ;; change this eventually to hab-sel, from prev model.
       ]
     ]
 
@@ -109,11 +116,12 @@ to dispersal
       ;; Make everyone disperse randomly, regardless of dominance status
       ;; Do enforce the carrying capacity, set losers as satellites, but losers have nothing to do with traits
       ask skimmers with [dominant? = false] [
+        set heading random 360
         fd 1 ;; Pick a random neighbor, and go there
       ]
     ]
 
-    ask skimmers [set dominant? true]
+    ;ask skimmers [set dominant? true]
     ;; Is this timing correct? How to avoid extra males coming in underneath K?
     ;; Kinda depends on the dispersal strategy?
 end
@@ -123,7 +131,7 @@ to selection
     ;; Health affected by match with env. The worse the match, the more health lost
     ;set health (health - abs(trait - env))
     ;; But I need to limit this to the ideal patches (5)...
-    set health (health - abs(5 - ([env] of patch-here)))
+    set health (health - 2 * (abs(5 - ([env] of patch-here))))
     ;; If enough health lost, die
     if health <= 0 [
       die ]
@@ -131,12 +139,14 @@ to selection
 end
 
 to breeding
-  ask skimmers [
-    hatch 1 [
-      set health init-health
-      ;; Offspring differ from parents just slightly (how necessary is this?)
-      set trait (random-normal trait 1)
-       ]
+  ask patches with [env = 5] [
+    ask skimmers-here with [dominant? = true] [
+      hatch 1 [
+        set health init-health
+        ;; Offspring differ from parents just slightly (how necessary is this?)
+        set trait (random-normal trait 1)
+      ]
+    ]
   ]
 end
 @#$#@#$#@
@@ -223,10 +233,10 @@ SLIDER
 260
 init-health
 init-health
+5
+20
 10
-100
-10
-10
+5
 1
 NIL
 HORIZONTAL
@@ -281,6 +291,39 @@ ignore-indivs
 1
 1
 -1000
+
+MONITOR
+687
+216
+826
+261
+Dominant trait mean
+mean [trait] of skimmers with [dominant? = true]
+1
+1
+11
+
+MONITOR
+689
+279
+815
+324
+Satellite trait mean
+mean [trait] of skimmers with [dominant? = false]
+1
+1
+11
+
+MONITOR
+682
+350
+855
+395
+Suitable patches occupied
+(count patches with [(count skimmers-here > 0) and (env = 5)])/(count patches with [env = 5])
+1
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
