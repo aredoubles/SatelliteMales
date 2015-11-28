@@ -4,6 +4,7 @@
 ;; Include at least the first dispersal strategy: habitat selection
 
 breed [skimmers skimmer]
+globals [good-patches]
 
 skimmers-own [trait health dominant?]
 patches-own [env equil-abund] ;;equil-abund will be the pseudo-equilibrium abundance at each patch, over time
@@ -17,9 +18,10 @@ to setup
       set pcolor red + 1
     ]
   ]
+  set good-patches patches with [env = 5]
 
-  create-skimmers 300 [
-    setxy random-xcor random-ycor
+  create-skimmers 100 [
+    move-to one-of good-patches
     set heading 0
     set size 2
     set shape "dragonfly"
@@ -139,7 +141,7 @@ to selection
 end
 
 to breeding
-  ask patches with [env = 5] [
+  ask good-patches [
     ask skimmers-here with [dominant? = true] [
       hatch 1 [
         set health init-health
@@ -248,7 +250,7 @@ SWITCH
 347
 patch-sens
 patch-sens
-1
+0
 1
 -1000
 
@@ -277,7 +279,7 @@ SWITCH
 308
 avoid-crowds
 avoid-crowds
-1
+0
 1
 -1000
 
