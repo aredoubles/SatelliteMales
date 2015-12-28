@@ -2,7 +2,6 @@
 ;; v0.5.1
 
 ;; TODO
-;; Make breeding probability directly proportional to env
 
 breed [skimmers skimmer]
 globals [good-patches]
@@ -20,7 +19,8 @@ to setup
     ]
     set running-abund 0
     ;; Use logistic function to determine the odds of reproduction in each environment
-    set repro-odds ( 1 / (1 + exp (env - 5)) )
+    ;; The logistic function is centered on an env of 7 (50% odds there), with a steepness value of 1.5 (and 7*1.5 = 10.5)
+    set repro-odds ( 1 / (1 + exp (10.5 - 1.5 * env)) )
   ]
   set good-patches patches with [env = 10]
 
@@ -98,8 +98,8 @@ to dispersal
       ;; Best habitat selection (among neighbors)
       ask skimmers with [dominant? = false] [
         let open-patch patches in-radius disp-dist with [(count skimmers-here) < carrying-cap]
-        if open-patch = 0 [die]
         let best-target min-one-of open-patch [abs(10 - env)]
+        if best-target = nobody [die]
         face best-target
         move-to best-target
         ]
@@ -109,7 +109,7 @@ to dispersal
       ;; Pick a random uncrowded patch (that neighbors)
       ask skimmers with [dominant? = false] [
         let open-patch patches in-radius disp-dist with [(count skimmers-here) < carrying-cap]
-        if open-patch = 0 [die]
+        if open-patch = nobody [die]
         move-to one-of open-patch
       ]
     ]
@@ -153,8 +153,7 @@ to selection
     ;; But I need to limit this to the ideal patches (5)...
     set health (health - 2 * (abs(10 - ([env] of patch-here))))
     ;; If enough health lost, die
-    if health <= 0 [
-      die ]
+    if health <= 0 [ die ]
   ]
 end
 
@@ -162,7 +161,7 @@ to breeding
 
   ;; This seems overly generous, find a different scale
   ask skimmers with [dominant? = true] [
-    if random-float 1 > ([repro-odds] of patch-here) [
+    if random-float 1 < ([repro-odds] of patch-here) [
       hatch 1 [
         set health init-health
         ;; Offspring differ from parents just slightly (how necessary is this?)
