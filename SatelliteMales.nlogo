@@ -1,24 +1,24 @@
 ;; TODO
 ;; BehaviorSpace: report pseudo-equil abundance in every patch, given its 'env' value.
-;; Figure out how/when 'dominant?' switch is going to work
-;; Include at least the first dispersal strategy: habitat selection
+;; Just sum up abundances across all time steps, divide by ticks?
 
 breed [skimmers skimmer]
 globals [good-patches]
 
-skimmers-own [trait health dominant?]
-patches-own [env equil-abund] ;;equil-abund will be the pseudo-equilibrium abundance at each patch, over time
+skimmers-own [trait health dominant? disp-dist]
+patches-own [env running-abund] ;;running-abund will be the pseudo-equilibrium abundance at each patch, over time
 
 to setup
   ca
   ask patches [
-    set env random 10 ;; Number of suitability bins/levels
+    set env random 11 ;; Number of suitability bins/levels
     set pcolor scale-color 53 env -10 30
-    if env = 5 [
+    if env = 10 [
       set pcolor red + 1
     ]
+    set running-abund 0
   ]
-  set good-patches patches with [env = 5]
+  set good-patches patches with [env = 10]
 
   create-skimmers 100 [
     move-to one-of good-patches
@@ -64,13 +64,13 @@ to battles
   ]
 
   ask skimmers with [dominant? = false] [
-    set health health - 5
+    set health health - 4
     set color 44
   ]
 
   ask skimmers with [dominant? = true] [
     set health health - 2
-    set color 47
+    set color 48
   ]
 end
 
@@ -78,11 +78,21 @@ to dispersal
     ;; So what are all of my different strategies?
     ;; Make UI switches for each? And put in their own procedure too?
 
+    ;; In-radius search distance should be drawn from an exponential dispersal kernel
+    ;; Radius needs to be unique for each individual at each time step, not global
+
+  ask skimmers [
+    set disp-dist ((random-poisson disp-kernel-mean) + 1)
+  ]
+
     if (avoid-crowds = true) and (patch-sens = true) [
       ;; Best habitat selection (among neighbors)
       ask skimmers with [dominant? = false] [
-        let open-patch patches in-radius 2 with [(count skimmers-here) < carrying-cap]
-        let best-target min-one-of open-patch [abs(5 - env)]
+        ;; ERROR: something going on here with open-patch, spec. with disp-dist
+        ;; What if there are no open patches within radius? Does that need to be a condition?
+        let open-patch patches in-radius disp-dist with [(count skimmers-here) < carrying-cap]
+        if open-patch = 0 [die]
+        let best-target min-one-of open-patch [abs(10 - env)]
         face best-target
         move-to best-target
         ]
@@ -91,7 +101,8 @@ to dispersal
     if (avoid-crowds = true) and (patch-sens = false) [
       ;; Pick a random uncrowded patch (that neighbors)
       ask skimmers with [dominant? = false] [
-        let open-patch patches in-radius 2 with [(count skimmers-here) < carrying-cap]
+        let open-patch patches in-radius disp-dist with [(count skimmers-here) < carrying-cap]
+        if open-patch = 0 [die]
         move-to one-of open-patch
       ]
     ]
@@ -100,7 +111,7 @@ to dispersal
       ;; Pick a good neighbor patch, even if it's crowded
       ;; This seems like a very poor strategy, ignore somehow?
       ask skimmers with [dominant? = false] [
-        let best-target max-one-of patches in-radius 2 [abs(5 - env)]
+        let best-target max-one-of patches in-radius disp-dist [abs(10 - env)]
         face best-target
         move-to best-target
       ]
@@ -110,7 +121,7 @@ to dispersal
       ;; Random dispersal
       ask skimmers with [dominant? = false] [
         set heading random 360
-        fd random 2 ;; change this eventually to hab-sel, from prev model.
+        fd random disp-dist
       ]
     ]
 
@@ -133,7 +144,7 @@ to selection
     ;; Health affected by match with env. The worse the match, the more health lost
     ;set health (health - abs(trait - env))
     ;; But I need to limit this to the ideal patches (5)...
-    set health (health - 2 * (abs(5 - ([env] of patch-here))))
+    set health (health - 2 * (abs(10 - ([env] of patch-here))))
     ;; If enough health lost, die
     if health <= 0 [
       die ]
@@ -149,6 +160,23 @@ to breeding
         set trait (random-normal trait 1)
       ]
     ]
+  ]
+  ask patches with [env = 9] [
+    ask skimmers-here with [dominant? = true] [
+      ;; 20% of the time, breeding might happen in a decent patch. Adj. percentage as necessary
+      ;; Goal is to bridge good patches? In conjunction with adjusting dispersal kernels
+      if (random-float 1) > 0.8 [
+      hatch 1 [
+        set health init-health
+        ;; Offspring differ from parents just slightly (how necessary is this?)
+        set trait (random-normal trait 1)
+      ]
+      ]
+    ]
+  ]
+
+  ask patches [
+    set running-abund (running-abund + (count skimmers-here))
   ]
 end
 @#$#@#$#@
@@ -214,10 +242,10 @@ NIL
 1
 
 SLIDER
-24
-181
-196
-214
+22
+388
+194
+421
 carrying-cap
 carrying-cap
 0
@@ -229,10 +257,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-25
-227
-197
-260
+23
+434
+195
+467
 init-health
 init-health
 5
@@ -244,10 +272,10 @@ NIL
 HORIZONTAL
 
 SWITCH
-25
-314
-152
-347
+30
+210
+157
+243
 patch-sens
 patch-sens
 0
@@ -273,10 +301,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot count turtles"
 
 SWITCH
-25
-275
-167
-308
+30
+171
+172
+204
 avoid-crowds
 avoid-crowds
 0
@@ -284,10 +312,10 @@ avoid-crowds
 -1000
 
 SWITCH
-23
-357
-164
-390
+28
+253
+169
+286
 ignore-indivs
 ignore-indivs
 1
@@ -322,10 +350,25 @@ MONITOR
 855
 395
 Suitable patches occupied
-(count patches with [(count skimmers-here > 0) and (env = 5)])/(count patches with [env = 5])
+(count patches with [(count skimmers-here > 0) and (env = 10)])/(count patches with [env = 10])
 1
 1
 11
+
+SLIDER
+21
+310
+193
+343
+disp-kernel-mean
+disp-kernel-mean
+2
+20
+2
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -680,10 +723,39 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.2.1
+NetLogo 5.3
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
+<experiments>
+  <experiment name="experiment" repetitions="10" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="150"/>
+    <metric>mean [running-abund / ticks] of patches with [env = 10]</metric>
+    <metric>mean [running-abund / ticks] of patches with [env = 9]</metric>
+    <metric>mean [running-abund / ticks] of patches with [env = 8]</metric>
+    <metric>mean [running-abund / ticks] of patches with [env = 7]</metric>
+    <metric>mean [running-abund / ticks] of patches with [env = 6]</metric>
+    <metric>mean [running-abund / ticks] of patches with [env = 5]</metric>
+    <metric>mean [running-abund / ticks] of patches with [env = 4]</metric>
+    <metric>mean [running-abund / ticks] of patches with [env = 3]</metric>
+    <metric>mean [running-abund / ticks] of patches with [env = 2]</metric>
+    <metric>mean [running-abund / ticks] of patches with [env = 1]</metric>
+    <enumeratedValueSet variable="ignore-indivs">
+      <value value="true"/>
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="avoid-crowds">
+      <value value="true"/>
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="patch-sens">
+      <value value="true"/>
+      <value value="false"/>
+    </enumeratedValueSet>
+  </experiment>
+</experiments>
 @#$#@#$#@
 @#$#@#$#@
 default
