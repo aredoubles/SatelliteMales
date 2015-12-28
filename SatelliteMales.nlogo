@@ -1,12 +1,14 @@
+;; 28 Dec 2015
+;; v0.5.1
+
 ;; TODO
-;; BehaviorSpace: report pseudo-equil abundance in every patch, given its 'env' value.
-;; Just sum up abundances across all time steps, divide by ticks?
+;; Make breeding probability directly proportional to env
 
 breed [skimmers skimmer]
 globals [good-patches]
 
 skimmers-own [trait health dominant? disp-dist]
-patches-own [env running-abund] ;;running-abund will be the pseudo-equilibrium abundance at each patch, over time
+patches-own [env repro-odds running-abund] ;;running-abund will be the pseudo-equilibrium abundance at each patch, over time
 
 to setup
   ca
@@ -17,6 +19,8 @@ to setup
       set pcolor red + 1
     ]
     set running-abund 0
+    ;; Use logistic function to determine the odds of reproduction in each environment
+    set repro-odds ( 1 / (1 + exp (env - 5)) )
   ]
   set good-patches patches with [env = 10]
 
@@ -54,6 +58,7 @@ to battles
       ask min-n-of overcap skimmers-here [trait] [set dominant? false]
       ask max-n-of carrying-cap skimmers-here [trait] [set dominant? true]
     ]
+    ;; If indiv. differences are ignored, then the identity of dispersers and residents is random (using 'n-of')
     if (overcap > 0) and (ignore-indivs = true) [
       ask n-of overcap skimmers-here [set dominant? false]
       ask n-of carrying-cap skimmers-here [set dominant? true]
@@ -72,6 +77,10 @@ to battles
     set health health - 2
     set color 48
   ]
+
+  ask skimmers [
+    if health <= 0 [ die ]
+  ]
 end
 
 to dispersal
@@ -88,8 +97,6 @@ to dispersal
     if (avoid-crowds = true) and (patch-sens = true) [
       ;; Best habitat selection (among neighbors)
       ask skimmers with [dominant? = false] [
-        ;; ERROR: something going on here with open-patch, spec. with disp-dist
-        ;; What if there are no open patches within radius? Does that need to be a condition?
         let open-patch patches in-radius disp-dist with [(count skimmers-here) < carrying-cap]
         if open-patch = 0 [die]
         let best-target min-one-of open-patch [abs(10 - env)]
@@ -152,25 +159,14 @@ to selection
 end
 
 to breeding
-  ask good-patches [
-    ask skimmers-here with [dominant? = true] [
+
+  ;; This seems overly generous, find a different scale
+  ask skimmers with [dominant? = true] [
+    if random-float 1 > ([repro-odds] of patch-here) [
       hatch 1 [
         set health init-health
         ;; Offspring differ from parents just slightly (how necessary is this?)
         set trait (random-normal trait 1)
-      ]
-    ]
-  ]
-  ask patches with [env = 9] [
-    ask skimmers-here with [dominant? = true] [
-      ;; 20% of the time, breeding might happen in a decent patch. Adj. percentage as necessary
-      ;; Goal is to bridge good patches? In conjunction with adjusting dispersal kernels
-      if (random-float 1) > 0.8 [
-      hatch 1 [
-        set health init-health
-        ;; Offspring differ from parents just slightly (how necessary is this?)
-        set trait (random-normal trait 1)
-      ]
       ]
     ]
   ]
@@ -318,7 +314,7 @@ SWITCH
 286
 ignore-indivs
 ignore-indivs
-1
+0
 1
 -1000
 
@@ -363,8 +359,8 @@ SLIDER
 disp-kernel-mean
 disp-kernel-mean
 2
-20
-2
+10
+5
 1
 1
 NIL
@@ -728,7 +724,7 @@ NetLogo 5.3
 @#$#@#$#@
 @#$#@#$#@
 <experiments>
-  <experiment name="experiment" repetitions="10" runMetricsEveryStep="true">
+  <experiment name="experiment" repetitions="1" runMetricsEveryStep="true">
     <setup>setup</setup>
     <go>go</go>
     <timeLimit steps="150"/>
