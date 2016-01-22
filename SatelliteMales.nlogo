@@ -1,5 +1,5 @@
 ;; 22 Jan 2016
-;; v0.5.2
+;; v0.5.3
 
 ;; TODO
 
@@ -70,18 +70,18 @@ to battles
   ]
 
   ask skimmers with [dominant? = false] [
-    set health health - 4
+    ; set health health - 4 ;; seems unnecessary
     set color 44
   ]
 
   ask skimmers with [dominant? = true] [
-    set health health - 2
+    ; set health health - 2 ;; seems unnecessary
     set color 48
   ]
 
-  ask skimmers [
-    if health <= 0 [ die ]
-  ]
+  ;; Used to ask here: skimmers with health < 0 die
+  ;; If no longer docking health in battles, seems unnecessary to evaluate here
+
 end
 
 to dispersal
