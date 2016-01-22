@@ -1,5 +1,5 @@
-;; 28 Dec 2015
-;; v0.5.1
+;; 22 Jan 2016
+;; v0.5.2
 
 ;; TODO
 
@@ -19,8 +19,9 @@ to setup
     ]
     set running-abund 0
     ;; Use logistic function to determine the odds of reproduction in each environment
-    ;; The logistic function is centered on an env of 7 (50% odds there), with a steepness value of 1.5 (and 7*1.5 = 10.5)
-    set repro-odds ( 1 / (1 + exp (10.5 - 1.5 * env)) )
+    ;; The logistic function is centered on an env of 7 (50% odds there), with a steepness value of 1.75
+    ;; A higher steepness value means that more breeding occurs in envs with value 8 and 9
+    set repro-odds ( 1 / (1 + exp (-1.75 * (env - 7) ) ) )
   ]
   set good-patches patches with [env = 10]
 
@@ -723,7 +724,7 @@ NetLogo 5.3
 @#$#@#$#@
 @#$#@#$#@
 <experiments>
-  <experiment name="experiment" repetitions="1" runMetricsEveryStep="true">
+  <experiment name="experiment" repetitions="30" runMetricsEveryStep="true">
     <setup>setup</setup>
     <go>go</go>
     <timeLimit steps="150"/>
