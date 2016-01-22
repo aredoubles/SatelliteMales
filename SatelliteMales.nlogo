@@ -152,7 +152,7 @@ to selection
     ;; Health affected by match with env. The worse the match, the more health lost
     ;set health (health - abs(trait - env))
     ;; But I need to limit this to the ideal patches (5)...
-    set health (health - 2 * (abs(10 - ([env] of patch-here))))
+    set health (health - 2 * (10 - ([env] of patch-here)))
     ;; If enough health lost, die
     if health <= 0 [ die ]
   ]
