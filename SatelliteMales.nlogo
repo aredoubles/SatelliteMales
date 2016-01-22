@@ -94,7 +94,7 @@ to dispersal
     set disp-dist ((random-poisson disp-kernel-mean) + 1)
   ]
 
-    if (avoid-crowds = true) and (patch-sens = true) [
+    if (avoid-crowds = true) and (env-sens = true) [
       ;; Best habitat selection (among neighbors)
       ask skimmers with [dominant? = false] [
         let open-patch patches in-radius disp-dist with [(count skimmers-here) < carrying-cap]
@@ -105,7 +105,7 @@ to dispersal
         ]
       ]
 
-    if (avoid-crowds = true) and (patch-sens = false) [
+    if (avoid-crowds = true) and (env-sens = false) [
       ;; Pick a random uncrowded patch (that neighbors)
       ask skimmers with [dominant? = false] [
         let open-patch patches in-radius disp-dist with [(count skimmers-here) < carrying-cap]
@@ -114,7 +114,7 @@ to dispersal
       ]
     ]
 
-    if (avoid-crowds = false) and (patch-sens = true) [
+    if (avoid-crowds = false) and (env-sens = true) [
       ;; Pick a good neighbor patch, even if it's crowded
       ;; This seems like a very poor strategy, ignore somehow?
       ask skimmers with [dominant? = false] [
@@ -124,7 +124,7 @@ to dispersal
       ]
     ]
 
-    if (avoid-crowds = false) and (patch-sens = false) [
+    if (avoid-crowds = false) and (env-sens = false) [
       ;; Random dispersal
       ask skimmers with [dominant? = false] [
         set heading random 360
@@ -271,8 +271,8 @@ SWITCH
 210
 157
 243
-patch-sens
-patch-sens
+env-sens
+env-sens
 0
 1
 -1000
