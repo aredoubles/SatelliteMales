@@ -1,5 +1,5 @@
 ;; 22 Jan 2016
-;; v0.5.3
+;; v0.5.4
 
 ;; TODO
 
@@ -21,7 +21,7 @@ to setup
     ;; Use logistic function to determine the odds of reproduction in each environment
     ;; The logistic function is centered on an env of 7 (50% odds there), with a steepness value of 1.75
     ;; A higher steepness value means that more breeding occurs in envs with value 8 and 9
-    set repro-odds ( 1 / (1 + exp (-1.75 * (env - 7) ) ) )
+    set repro-odds ( 1 / (1 + exp (-1.5 * (env - 7) ) ) )
   ]
   set good-patches patches with [env = 10]
 
@@ -99,7 +99,7 @@ to dispersal
       ;; Best habitat selection (among neighbors)
       ask skimmers with [dominant? = false] [
         let open-patch patches in-radius disp-dist with [(count skimmers-here) < carrying-cap]
-        let best-target min-one-of open-patch [abs(10 - env)]
+        let best-target min-one-of open-patch [10 - env]
         if best-target = nobody [die]
         face best-target
         move-to best-target
@@ -119,7 +119,7 @@ to dispersal
       ;; Pick a good neighbor patch, even if it's crowded
       ;; This seems like a very poor strategy, ignore somehow?
       ask skimmers with [dominant? = false] [
-        let best-target max-one-of patches in-radius disp-dist [abs(10 - env)]
+        let best-target min-one-of patches in-radius disp-dist [10 - env]
         face best-target
         move-to best-target
       ]
@@ -274,7 +274,7 @@ SWITCH
 243
 env-sens
 env-sens
-0
+1
 1
 -1000
 
