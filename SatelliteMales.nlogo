@@ -1,7 +1,8 @@
-;; 22 Jan 2016
-;; v0.5.4
+;; 23 Jan 2016
+;; v0.5.5
 
 ;; TODO
+; For env-sensitive-only, how to get them to leave the home patch, even though it's the best within that radius?
 
 breed [skimmers skimmer]
 globals [good-patches]
@@ -110,8 +111,12 @@ to dispersal
       ;; Pick a random uncrowded patch (that neighbors)
       ask skimmers with [dominant? = false] [
         let open-patch patches in-radius disp-dist with [(count skimmers-here) < carrying-cap]
-        if open-patch = nobody [die]
-        move-to one-of open-patch
+        ifelse any? open-patch [
+          face one-of open-patch
+          move-to one-of open-patch
+        ]
+        ; if no open patches available:
+        [ die ]
       ]
     ]
 
@@ -123,6 +128,8 @@ to dispersal
         face best-target
         move-to best-target
       ]
+      ; Are they not dispersing at all right now? 'In-radius' DOES include the current patch...
+      ; Try 'other'?
     ]
 
     if (avoid-crowds = false) and (env-sens = false) [
@@ -274,7 +281,7 @@ SWITCH
 243
 env-sens
 env-sens
-1
+0
 1
 -1000
 
@@ -303,7 +310,7 @@ SWITCH
 204
 avoid-crowds
 avoid-crowds
-0
+1
 1
 -1000
 
@@ -314,7 +321,7 @@ SWITCH
 286
 ignore-indivs
 ignore-indivs
-0
+1
 1
 -1000
 
@@ -724,7 +731,7 @@ NetLogo 5.3
 @#$#@#$#@
 @#$#@#$#@
 <experiments>
-  <experiment name="experiment" repetitions="30" runMetricsEveryStep="true">
+  <experiment name="experiment" repetitions="40" runMetricsEveryStep="true">
     <setup>setup</setup>
     <go>go</go>
     <timeLimit steps="150"/>
@@ -746,7 +753,7 @@ NetLogo 5.3
       <value value="true"/>
       <value value="false"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="patch-sens">
+    <enumeratedValueSet variable="env-sens">
       <value value="true"/>
       <value value="false"/>
     </enumeratedValueSet>
