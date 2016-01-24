@@ -76,7 +76,6 @@ to battles
   ]
 
   ask skimmers with [dominant? = true] [
-    ; set health health - 2 ;; seems unnecessary
     set color 48
   ]
 
@@ -94,6 +93,7 @@ to dispersal
 
   ask skimmers [
     set disp-dist ((random-poisson disp-kernel-mean) + 1)
+    ; The '+ 1' term is to avoid unwanted philopatry
   ]
 
     if (avoid-crowds = true) and (env-sens = true) [
@@ -124,12 +124,14 @@ to dispersal
       ;; Pick a good neighbor patch, even if it's crowded
       ;; This seems like a very poor strategy, ignore somehow?
       ask skimmers with [dominant? = false] [
-        let best-target min-one-of patches in-radius disp-dist [10 - env]
+        let best-target min-one-of other patches in-radius disp-dist [10 - env]
         face best-target
         move-to best-target
       ]
-      ; Are they not dispersing at all right now? 'In-radius' DOES include the current patch...
-      ; Try 'other'?
+      ; They ARE dispersing...just to other perfect patches
+      ; How do I force dispersal into 8s and 9s, without invoking crowdedness?
+      ; Greatly reduce search radius?
+      ; Or is there what I'd expect/want?
     ]
 
     if (avoid-crowds = false) and (env-sens = false) [
@@ -148,10 +150,6 @@ to dispersal
         fd 1 ;; Pick a random neighbor, and go there
       ]
     ]
-
-    ;ask skimmers [set dominant? true]
-    ;; Is this timing correct? How to avoid extra males coming in underneath K?
-    ;; Kinda depends on the dispersal strategy?
 end
 
 to selection
@@ -159,7 +157,8 @@ to selection
     ;; Health affected by match with env. The worse the match, the more health lost
     ;set health (health - abs(trait - env))
     ;; But I need to limit this to the ideal patches (5)...
-    set health (health - 2 * (10 - ([env] of patch-here)))
+    set health (health - 2 * (10 - ([env] of patch-here)) - 1)
+    ;; The '- 1' term at the end imposes a finite lifespan, regardless of patch quality
     ;; If enough health lost, die
     if health <= 0 [ die ]
   ]
@@ -367,7 +366,7 @@ disp-kernel-mean
 disp-kernel-mean
 2
 10
-5
+2
 1
 1
 NIL
