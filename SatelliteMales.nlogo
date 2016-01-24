@@ -1,5 +1,5 @@
-;; 23 Jan 2016
-;; v0.5.5
+;; 24 Jan 2016
+;; v0.5.6
 
 ;; TODO
 ; For env-sensitive-only, how to get them to leave the home patch, even though it's the best within that radius?
@@ -280,7 +280,7 @@ SWITCH
 243
 env-sens
 env-sens
-0
+1
 1
 -1000
 
@@ -366,7 +366,7 @@ disp-kernel-mean
 disp-kernel-mean
 2
 10
-2
+3
 1
 1
 NIL
@@ -730,7 +730,7 @@ NetLogo 5.3
 @#$#@#$#@
 @#$#@#$#@
 <experiments>
-  <experiment name="experiment" repetitions="40" runMetricsEveryStep="true">
+  <experiment name="experiment" repetitions="40" runMetricsEveryStep="false">
     <setup>setup</setup>
     <go>go</go>
     <timeLimit steps="150"/>
