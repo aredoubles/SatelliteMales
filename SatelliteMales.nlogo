@@ -1,14 +1,15 @@
-;; 24 Jan 2016
-;; v0.5.6
+;; 9 Feb 2016
+;; v0.6.0
 
 ;; TODO
-; For env-sensitive-only, how to get them to leave the home patch, even though it's the best within that radius?
+; Limit dispersal kernel mean, see how that affects env-sensitive especially
+; Variation partitioning!
 
 breed [skimmers skimmer]
 globals [good-patches]
 
 skimmers-own [trait health dominant? disp-dist]
-patches-own [env repro-odds running-abund] ;;running-abund will be the pseudo-equilibrium abundance at each patch, over time
+patches-own [env repro-odds running-abund running-deaths] ;;running-abund will be the pseudo-equilibrium abundance at each patch, over time
 
 to setup
   ca
@@ -19,6 +20,7 @@ to setup
       set pcolor red + 1
     ]
     set running-abund 0
+    set running-deaths 0
     ;; Use logistic function to determine the odds of reproduction in each environment
     ;; The logistic function is centered on an env of 7 (50% odds there), with a steepness value of 1.75
     ;; A higher steepness value means that more breeding occurs in envs with value 8 and 9
@@ -101,7 +103,9 @@ to dispersal
       ask skimmers with [dominant? = false] [
         let open-patch patches in-radius disp-dist with [(count skimmers-here) < carrying-cap]
         let best-target min-one-of open-patch [10 - env]
-        if best-target = nobody [die]
+        if best-target = nobody [
+          ask patch-here [set running-deaths (running-deaths + 1)]
+            die ]
         face best-target
         move-to best-target
         ]
@@ -116,7 +120,8 @@ to dispersal
           move-to one-of open-patch
         ]
         ; if no open patches available:
-        [ die ]
+        [ ask patch-here [set running-deaths (running-deaths + 1)]
+          die ]
       ]
     ]
 
@@ -160,7 +165,14 @@ to selection
     set health (health - 2 * (10 - ([env] of patch-here)) - 1)
     ;; The '- 1' term at the end imposes a finite lifespan, regardless of patch quality
     ;; If enough health lost, die
-    if health <= 0 [ die ]
+    if health <= 0 [
+      ask patch-here [set running-deaths (running-deaths + 1)]
+        die ]
+    ]
+
+  ask patches [
+    set running-abund (running-abund + (count skimmers-here))
+    ; set running-death (
   ]
 end
 
@@ -175,10 +187,6 @@ to breeding
         set trait (random-normal trait 1)
       ]
     ]
-  ]
-
-  ask patches [
-    set running-abund (running-abund + (count skimmers-here))
   ]
 end
 @#$#@#$#@
@@ -744,6 +752,18 @@ NetLogo 5.3
     <metric>mean [running-abund / ticks] of patches with [env = 3]</metric>
     <metric>mean [running-abund / ticks] of patches with [env = 2]</metric>
     <metric>mean [running-abund / ticks] of patches with [env = 1]</metric>
+    <metric>mean [running-deaths] of patches with [env = 10]</metric>
+    <metric>mean [running-deaths] of patches with [env = 9]</metric>
+    <metric>mean [running-deaths] of patches with [env = 8]</metric>
+    <metric>mean [running-deaths] of patches with [env = 7]</metric>
+    <metric>mean [running-deaths] of patches with [env = 6]</metric>
+    <metric>mean [running-deaths] of patches with [env = 5]</metric>
+    <metric>mean [running-deaths] of patches with [env = 4]</metric>
+    <metric>mean [running-deaths] of patches with [env = 3]</metric>
+    <metric>mean [running-deaths] of patches with [env = 2]</metric>
+    <metric>mean [running-deaths] of patches with [env = 1]</metric>
+    <metric>count skimmers</metric>
+    <metric>((count patches with [count skimmers-here &gt; 0]) / (count patches))</metric>
     <enumeratedValueSet variable="ignore-indivs">
       <value value="true"/>
       <value value="false"/>
