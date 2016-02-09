@@ -1,15 +1,15 @@
 ;; 9 Feb 2016
-;; v0.6.0
+;; v0.6.1
 
 ;; TODO
-; Limit dispersal kernel mean, see how that affects env-sensitive especially
-; Variation partitioning!
+; What if patch quality (env) is made into a floating, continuous variable instead? Try as a fork!
 
 breed [skimmers skimmer]
 globals [good-patches]
 
 skimmers-own [trait health dominant? disp-dist]
-patches-own [env repro-odds running-abund running-deaths] ;;running-abund will be the pseudo-equilibrium abundance at each patch, over time
+patches-own [env repro-odds running-abund running-deaths]
+;; running-abund will be the pseudo-equilibrium abundance at each patch, over time
 
 to setup
   ca
@@ -170,6 +170,12 @@ to selection
         die ]
     ]
 
+  battles
+  ask skimmers with [dominant? = false] [
+    ask patch-here [set running-deaths (running-deaths + 1)]
+    die
+  ]
+
   ask patches [
     set running-abund (running-abund + (count skimmers-here))
     ; set running-death (
@@ -288,7 +294,7 @@ SWITCH
 243
 env-sens
 env-sens
-1
+0
 1
 -1000
 
@@ -317,7 +323,7 @@ SWITCH
 204
 avoid-crowds
 avoid-crowds
-1
+0
 1
 -1000
 
@@ -738,7 +744,7 @@ NetLogo 5.3
 @#$#@#$#@
 @#$#@#$#@
 <experiments>
-  <experiment name="experiment" repetitions="40" runMetricsEveryStep="false">
+  <experiment name="experiment" repetitions="50" runMetricsEveryStep="false">
     <setup>setup</setup>
     <go>go</go>
     <timeLimit steps="150"/>
@@ -764,10 +770,6 @@ NetLogo 5.3
     <metric>mean [running-deaths] of patches with [env = 1]</metric>
     <metric>count skimmers</metric>
     <metric>((count patches with [count skimmers-here &gt; 0]) / (count patches))</metric>
-    <enumeratedValueSet variable="ignore-indivs">
-      <value value="true"/>
-      <value value="false"/>
-    </enumeratedValueSet>
     <enumeratedValueSet variable="avoid-crowds">
       <value value="true"/>
       <value value="false"/>
