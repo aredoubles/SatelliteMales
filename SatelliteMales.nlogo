@@ -1,5 +1,5 @@
-;; 9 Feb 2016
-;; v0.6.1
+;; 11 Feb 2016
+;; v0.6.2
 
 ;; TODO
 ; What if patch quality (env) is made into a floating, continuous variable instead? Try as a fork!
@@ -13,6 +13,7 @@ patches-own [env repro-odds running-abund running-deaths]
 
 to setup
   ca
+  set varpart-path (word avoid-crowds "-" env-sens "-" behaviorspace-run-number ".csv")
   ask patches [
     set env random 11 ;; Number of suitability bins/levels
     set pcolor scale-color 53 env -10 30
@@ -386,6 +387,17 @@ disp-kernel-mean
 NIL
 HORIZONTAL
 
+INPUTBOX
+34
+92
+193
+152
+varpart-path
+true-true-0.csv
+1
+0
+String
+
 @#$#@#$#@
 ## WHAT IS IT?
 
@@ -747,6 +759,9 @@ NetLogo 5.3
   <experiment name="experiment" repetitions="50" runMetricsEveryStep="false">
     <setup>setup</setup>
     <go>go</go>
+    <final>clear-output
+ask patches [show (word "the population size is " (count skimmers-here) ", and the number of env is" (env))]
+export-output varpart-path</final>
     <timeLimit steps="150"/>
     <metric>mean [running-abund / ticks] of patches with [env = 10]</metric>
     <metric>mean [running-abund / ticks] of patches with [env = 9]</metric>
