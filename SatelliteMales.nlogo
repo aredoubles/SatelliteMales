@@ -1,19 +1,21 @@
 ;; 11 Feb 2016
-;; v0.6.2
+;; v0.6.3
 
 ;; TODO
 ; What if patch quality (env) is made into a floating, continuous variable instead? Try as a fork!
 
 breed [skimmers skimmer]
-globals [good-patches]
+globals [good-patches saveto]
 
 skimmers-own [trait health dominant? disp-dist]
 patches-own [env repro-odds running-abund running-deaths]
 ;; running-abund will be the pseudo-equilibrium abundance at each patch, over time
 
+
 to setup
   ca
   set varpart-path (word avoid-crowds "-" env-sens "-" behaviorspace-run-number ".csv")
+  set saveto word "/Users/rogershaw/Dropbox/7Spr2016/NetLogo/SatelliteMales/SiteTables/" varpart-path
   ask patches [
     set env random 11 ;; Number of suitability bins/levels
     set pcolor scale-color 53 env -10 30
@@ -195,6 +197,20 @@ to breeding
       ]
     ]
   ]
+end
+
+
+to write-to-file
+  file-open saveto
+  file-print ("xcor, ycor, env, abund")
+
+  ask patches [
+    file-print (
+      word pxcor "," pycor "," env "," (count skimmers-here)
+      )
+  ]
+
+  file-close
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -393,7 +409,7 @@ INPUTBOX
 193
 152
 varpart-path
-true-true-0.csv
+true-true-1.csv
 1
 0
 String
@@ -756,12 +772,10 @@ NetLogo 5.3
 @#$#@#$#@
 @#$#@#$#@
 <experiments>
-  <experiment name="experiment" repetitions="50" runMetricsEveryStep="false">
+  <experiment name="experiment" repetitions="2" runMetricsEveryStep="false">
     <setup>setup</setup>
     <go>go</go>
-    <final>clear-output
-ask patches [show (word "the population size is " (count skimmers-here) ", and the number of env is" (env))]
-export-output varpart-path</final>
+    <final>write-to-file</final>
     <timeLimit steps="150"/>
     <metric>mean [running-abund / ticks] of patches with [env = 10]</metric>
     <metric>mean [running-abund / ticks] of patches with [env = 9]</metric>
