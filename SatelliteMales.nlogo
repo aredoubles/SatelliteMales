@@ -202,11 +202,11 @@ end
 
 to write-to-file
   file-open saveto
-  file-print ("xcor, ycor, env, abund")
+  file-print ("xcor, ycor, env, abund, deaths")
 
   ask patches [
     file-print (
-      word pxcor "," pycor "," env "," (count skimmers-here)
+      word pxcor "," pycor "," env "," (count skimmers-here) running-deaths
       )
   ]
 
@@ -777,28 +777,6 @@ NetLogo 5.3
     <go>go</go>
     <final>write-to-file</final>
     <timeLimit steps="150"/>
-    <metric>mean [running-abund / ticks] of patches with [env = 10]</metric>
-    <metric>mean [running-abund / ticks] of patches with [env = 9]</metric>
-    <metric>mean [running-abund / ticks] of patches with [env = 8]</metric>
-    <metric>mean [running-abund / ticks] of patches with [env = 7]</metric>
-    <metric>mean [running-abund / ticks] of patches with [env = 6]</metric>
-    <metric>mean [running-abund / ticks] of patches with [env = 5]</metric>
-    <metric>mean [running-abund / ticks] of patches with [env = 4]</metric>
-    <metric>mean [running-abund / ticks] of patches with [env = 3]</metric>
-    <metric>mean [running-abund / ticks] of patches with [env = 2]</metric>
-    <metric>mean [running-abund / ticks] of patches with [env = 1]</metric>
-    <metric>mean [running-deaths] of patches with [env = 10]</metric>
-    <metric>mean [running-deaths] of patches with [env = 9]</metric>
-    <metric>mean [running-deaths] of patches with [env = 8]</metric>
-    <metric>mean [running-deaths] of patches with [env = 7]</metric>
-    <metric>mean [running-deaths] of patches with [env = 6]</metric>
-    <metric>mean [running-deaths] of patches with [env = 5]</metric>
-    <metric>mean [running-deaths] of patches with [env = 4]</metric>
-    <metric>mean [running-deaths] of patches with [env = 3]</metric>
-    <metric>mean [running-deaths] of patches with [env = 2]</metric>
-    <metric>mean [running-deaths] of patches with [env = 1]</metric>
-    <metric>count skimmers</metric>
-    <metric>((count patches with [count skimmers-here &gt; 0]) / (count patches))</metric>
     <enumeratedValueSet variable="avoid-crowds">
       <value value="true"/>
       <value value="false"/>
