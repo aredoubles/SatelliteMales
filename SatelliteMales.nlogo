@@ -17,9 +17,9 @@ to setup
   set varpart-path (word avoid-crowds "-" env-sens "-" behaviorspace-run-number ".csv")
   set saveto word "/Users/rogershaw/Dropbox/7Spr2016/NetLogo/SatelliteMales/SiteTables/" varpart-path
   ask patches [
-    set env random 11 ;; Number of suitability bins/levels
+    set env random-float 11 ;; Number of suitability bins/levels
     set pcolor scale-color 53 env -10 30
-    if env = 10 [
+    if env >= 10 [
       set pcolor red + 1
     ]
     set running-abund 0
@@ -29,7 +29,7 @@ to setup
     ;; A higher steepness value means that more breeding occurs in envs with value 8 and 9
     set repro-odds ( 1 / (1 + exp (-1.5 * (env - 7) ) ) )
   ]
-  set good-patches patches with [env = 10]
+  set good-patches patches with [env >= 10]
 
   create-skimmers 100 [
     move-to one-of good-patches
@@ -409,7 +409,7 @@ INPUTBOX
 193
 152
 varpart-path
-true-true-1.csv
+true-true-0.csv
 1
 0
 String
