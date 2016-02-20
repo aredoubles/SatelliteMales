@@ -14,8 +14,12 @@ patches-own [env repro-odds running-abund running-deaths]
 
 to setup
   ca
-  set varpart-path (word avoid-crowds "-" env-sens "-" behaviorspace-run-number ".csv")
-  set saveto word "/Users/rogershaw/Dropbox/7Spr2016/NetLogo/SatelliteMales/SiteTables/" varpart-path
+
+  set varpart-path (word avoid-crowds "-" env-sens "-" behaviorspace-run-number)
+  set saveto "/Users/rogershaw/Dropbox/7Spr2016/NetLogo/SatelliteMales/SiteTables/allcoms.csv"
+  file-open saveto
+  file-print ("run, xcor, ycor, env, abund")
+
   ask patches [
     set env random 11 ;; Number of suitability bins/levels
     set pcolor scale-color 53 env -10 30
@@ -201,12 +205,10 @@ end
 
 
 to write-to-file
-  file-open saveto
-  file-print ("xcor, ycor, env, abund")
 
   ask patches [
     file-print (
-      word pxcor "," pycor "," env "," (count skimmers-here)
+      word varpart-path "," pxcor "," pycor "," env "," (count skimmers-here)
       )
   ]
 
@@ -311,7 +313,7 @@ SWITCH
 243
 env-sens
 env-sens
-0
+1
 1
 -1000
 
@@ -340,7 +342,7 @@ SWITCH
 204
 avoid-crowds
 avoid-crowds
-0
+1
 1
 -1000
 
@@ -351,7 +353,7 @@ SWITCH
 286
 ignore-indivs
 ignore-indivs
-1
+0
 1
 -1000
 
@@ -409,7 +411,7 @@ INPUTBOX
 193
 152
 varpart-path
-true-true-1.csv
+false-false-7
 1
 0
 String
