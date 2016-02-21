@@ -218,10 +218,10 @@ end
 GRAPHICS-WINDOW
 210
 10
-649
-470
-16
-16
+455
+210
+-1
+-1
 13.0
 1
 10
@@ -232,10 +232,10 @@ GRAPHICS-WINDOW
 0
 0
 1
--16
-16
--16
-16
+0
+12
+0
+12
 0
 0
 1
@@ -399,7 +399,7 @@ disp-kernel-mean
 disp-kernel-mean
 2
 10
-3
+2
 1
 1
 NIL
@@ -411,7 +411,7 @@ INPUTBOX
 193
 152
 varpart-path
-false-false-7
+false-false-36
 1
 0
 String
@@ -774,7 +774,7 @@ NetLogo 5.3
 @#$#@#$#@
 @#$#@#$#@
 <experiments>
-  <experiment name="experiment" repetitions="2" runMetricsEveryStep="false">
+  <experiment name="experiment" repetitions="10" runMetricsEveryStep="false">
     <setup>setup</setup>
     <go>go</go>
     <final>write-to-file</final>
