@@ -29,9 +29,9 @@ to setup
     set running-abund 0
     set running-deaths 0
     ;; Use logistic function to determine the odds of reproduction in each environment
-    ;; The logistic function is centered on an env of 7 (50% odds there), with a steepness value of 1.00
+    ;; The logistic function is centered on an env of 7 (50% odds there), with a steepness value of breeding-steepness
     ;; A higher steepness value means that more breeding occurs in envs with value 8 and 9
-    set repro-odds ( 1 / (1 + exp (-1.00 * (env - 7) ) ) )
+    set repro-odds ( 1 / (1 + exp (breeding-steepness * (env - 7) ) ) )
   ]
   set good-patches patches with [env = 10]
 
@@ -101,6 +101,7 @@ to dispersal
     ;; Radius needs to be unique for each individual at each time step, not global
 
   ask skimmers [
+    ; pd
     set disp-dist ((random-poisson disp-kernel-mean) + 1)
     ; The '+ 1' term is to avoid unwanted philopatry
   ]
@@ -168,8 +169,8 @@ to selection
   ask skimmers [
     ;; Health affected by match with env. The worse the match, the more health lost
     ;set health (health - abs(trait - env))
-    ;; But I need to limit this to the ideal patches (5)...
-    set health (health - 2 * (10 - ([env] of patch-here)) - 1)
+    ;; But I need to limit this to the decent patches (4)...
+    set health (health - 1.666 * (10 - ([env] of patch-here)) - 1)
     ;; The '- 1' term at the end imposes a finite lifespan, regardless of patch quality
     ;; If enough health lost, die
     if health <= 0 [
@@ -177,6 +178,7 @@ to selection
         die ]
     ]
 
+  ;; Re-battle, just to re-determine dominant and satellite, post-dispersal
   battles
   ask skimmers with [dominant? = false] [
     ask patch-here [set running-deaths (running-deaths + 1)]
@@ -313,7 +315,7 @@ SWITCH
 243
 env-sens
 env-sens
-1
+0
 1
 -1000
 
@@ -411,10 +413,25 @@ INPUTBOX
 193
 152
 varpart-path
-false-false-0
+false-true-0
 1
 0
 String
+
+SLIDER
+665
+415
+843
+448
+breeding-steepness
+breeding-steepness
+1.0
+2.0
+1.7
+0.1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
