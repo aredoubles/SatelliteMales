@@ -19,6 +19,8 @@ to setup
   set saveto "/Users/rogershaw/Dropbox/7Spr2016/NetLogo/SatelliteMales/SiteTables/allcoms.csv"
   file-open saveto
   file-print ("run, xcor, ycor, env, abund")
+  file-print ("$$$")
+  file-print ("run, xcor, ycor, env, abund")
 
   ask patches [
     set env random 11 ;; Number of suitability bins/levels
@@ -29,9 +31,9 @@ to setup
     set running-abund 0
     set running-deaths 0
     ;; Use logistic function to determine the odds of reproduction in each environment
-    ;; The logistic function is centered on an env of 7 (50% odds there), with a steepness value of breeding-steepness
-    ;; A higher steepness value means that more breeding occurs in envs with value 8 and 9
-    set repro-odds ( 1 / (1 + exp (-(breeding-steepness) * (env - 7) ) ) )
+    ;; The logistic function is centered on an env of 8 (50% odds there), with a steepness value of breeding-steepness
+    ;; A higher steepness value means that more breeding occurs in envs with value 9 and 10
+    set repro-odds ( 1 / (1 + exp (-(breeding-steepness) * (env - 8) ) ) )
   ]
   set good-patches patches with [env = 10]
 
@@ -170,7 +172,7 @@ to selection
     ;; Health affected by match with env. The worse the match, the more health lost
     ;set health (health - abs(trait - env))
     ;; But I need to limit this to the decent patches (4)...
-    set health (health - 1.666 * (10 - ([env] of patch-here)) - 1)
+    set health (health - 1.42 * (10 - ([env] of patch-here)) - 1)
     ;; The '- 1' term at the end imposes a finite lifespan, regardless of patch quality
     ;; If enough health lost, die
     if health <= 0 [
@@ -413,7 +415,7 @@ INPUTBOX
 193
 152
 varpart-path
-false-false-0
+false-false-36
 1
 0
 String
@@ -791,7 +793,7 @@ NetLogo 5.3
 @#$#@#$#@
 @#$#@#$#@
 <experiments>
-  <experiment name="experiment" repetitions="100" runMetricsEveryStep="false">
+  <experiment name="experiment" repetitions="10" runMetricsEveryStep="false">
     <setup>setup</setup>
     <go>go</go>
     <final>write-to-file</final>
