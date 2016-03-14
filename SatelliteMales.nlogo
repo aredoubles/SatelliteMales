@@ -31,7 +31,7 @@ to setup
     ;; Use logistic function to determine the odds of reproduction in each environment
     ;; The logistic function is centered on an env of 7 (50% odds there), with a steepness value of breeding-steepness
     ;; A higher steepness value means that more breeding occurs in envs with value 8 and 9
-    set repro-odds ( 1 / (1 + exp (breeding-steepness * (env - 7) ) ) )
+    set repro-odds ( 1 / (1 + exp (-(breeding-steepness) * (env - 7) ) ) )
   ]
   set good-patches patches with [env = 10]
 
@@ -315,7 +315,7 @@ SWITCH
 243
 env-sens
 env-sens
-0
+1
 1
 -1000
 
@@ -413,7 +413,7 @@ INPUTBOX
 193
 152
 varpart-path
-false-true-0
+false-false-0
 1
 0
 String
