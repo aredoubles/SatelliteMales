@@ -8,7 +8,7 @@ breed [skimmers skimmer]
 globals [good-patches saveto]
 
 skimmers-own [trait health dominant? disp-dist]
-patches-own [env repro-odds running-abund running-deaths]
+patches-own [env repro-odds running-abund running-deaths running-births]
 ;; running-abund will be the pseudo-equilibrium abundance at each patch, over time
 
 
@@ -16,7 +16,7 @@ to setup
   ca
 
   set varpart-path (word avoid-crowds "-" env-sens "-" behaviorspace-run-number)
-  set saveto "/Users/rogershaw/Dropbox/7Spr2016/NetLogo/SatelliteMales/SiteTables/allcoms.csv"
+  set saveto "/Users/rogershaw/Dropbox/7Spr2016/NetLogo/SatelliteMales/allcoms.csv"
   file-open saveto
   file-print ("run, xcor, ycor, env, abund")
   file-print ("$$$")
@@ -30,6 +30,7 @@ to setup
     ]
     set running-abund 0
     set running-deaths 0
+    set running-births 0
     ;; Use logistic function to determine the odds of reproduction in each environment
     ;; The logistic function is centered on an env of 8 (50% odds there), with a steepness value of breeding-steepness
     ;; A higher steepness value means that more breeding occurs in envs with value 9 and 10
@@ -202,6 +203,7 @@ to breeding
         set health init-health
         ;; Offspring differ from parents just slightly (how necessary is this?)
         set trait (random-normal trait 1)
+        ask patch-here [set running-births (running-births + 1)]
       ]
     ]
   ]
@@ -357,7 +359,7 @@ SWITCH
 286
 ignore-indivs
 ignore-indivs
-0
+1
 1
 -1000
 
@@ -415,7 +417,7 @@ INPUTBOX
 193
 152
 varpart-path
-false-false-36
+false-false-200
 1
 0
 String
@@ -793,7 +795,7 @@ NetLogo 5.3
 @#$#@#$#@
 @#$#@#$#@
 <experiments>
-  <experiment name="experiment" repetitions="10" runMetricsEveryStep="false">
+  <experiment name="experiment" repetitions="50" runMetricsEveryStep="false">
     <setup>setup</setup>
     <go>go</go>
     <final>write-to-file</final>
@@ -818,6 +820,16 @@ NetLogo 5.3
     <metric>mean [running-deaths] of patches with [env = 3]</metric>
     <metric>mean [running-deaths] of patches with [env = 2]</metric>
     <metric>mean [running-deaths] of patches with [env = 1]</metric>
+    <metric>mean [running-births] of patches with [env = 10]</metric>
+    <metric>mean [running-births] of patches with [env = 9]</metric>
+    <metric>mean [running-births] of patches with [env = 8]</metric>
+    <metric>mean [running-births] of patches with [env = 7]</metric>
+    <metric>mean [running-births] of patches with [env = 6]</metric>
+    <metric>mean [running-births] of patches with [env = 5]</metric>
+    <metric>mean [running-births] of patches with [env = 4]</metric>
+    <metric>mean [running-births] of patches with [env = 3]</metric>
+    <metric>mean [running-births] of patches with [env = 2]</metric>
+    <metric>mean [running-births] of patches with [env = 1]</metric>
     <metric>count skimmers</metric>
     <metric>((count patches with [count skimmers-here &gt; 0]) / (count patches))</metric>
     <enumeratedValueSet variable="avoid-crowds">
