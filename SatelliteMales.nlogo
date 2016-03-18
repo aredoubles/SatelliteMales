@@ -8,7 +8,7 @@ breed [skimmers skimmer]
 globals [good-patches saveto]
 
 skimmers-own [trait health dominant? disp-dist]
-patches-own [env repro-odds running-abund running-deaths running-births]
+patches-own [env repro-odds running-abund running-deaths running-births running-in running-out]
 ;; running-abund will be the pseudo-equilibrium abundance at each patch, over time
 
 
@@ -18,9 +18,9 @@ to setup
   set varpart-path (word avoid-crowds "-" env-sens "-" behaviorspace-run-number)
   set saveto "/Users/rogershaw/Dropbox/7Spr2016/NetLogo/SatelliteMales/allcoms.csv"
   file-open saveto
-  file-print ("run, xcor, ycor, env, abund")
+  file-print ("run, xcor, ycor, env, abund, deaths, births, immig, emig")
   file-print ("$$$")
-  file-print ("run, xcor, ycor, env, abund")
+  file-print ("run, xcor, ycor, env, abund, deaths, births, immig, emig")
 
   ask patches [
     set env random 11 ;; Number of suitability bins/levels
@@ -31,6 +31,8 @@ to setup
     set running-abund 0
     set running-deaths 0
     set running-births 0
+    set running-in 0
+    set running-out 0
     ;; Use logistic function to determine the odds of reproduction in each environment
     ;; The logistic function is centered on an env of 8 (50% odds there), with a steepness value of breeding-steepness
     ;; A higher steepness value means that more breeding occurs in envs with value 9 and 10
@@ -117,8 +119,14 @@ to dispersal
         if best-target = nobody [
           ask patch-here [set running-deaths (running-deaths + 1)]
             die ]
+        ask patch-here [
+          set running-out (running-out + 1)
+        ]
         face best-target
         move-to best-target
+        ask best-target [
+          set running-in (running-in + 1)
+        ]
         ]
       ]
 
@@ -127,8 +135,14 @@ to dispersal
       ask skimmers with [dominant? = false] [
         let open-patch patches in-radius disp-dist with [(count skimmers-here) < carrying-cap]
         ifelse any? open-patch [
+          ask patch-here [
+            set running-out (running-out + 1)
+          ]
           face one-of open-patch
           move-to one-of open-patch
+          ask patch-here [
+            set running-in (running-in + 1)
+          ]
         ]
         ; if no open patches available:
         [ ask patch-here [set running-deaths (running-deaths + 1)]
@@ -141,8 +155,14 @@ to dispersal
       ;; This seems like a very poor strategy, ignore somehow?
       ask skimmers with [dominant? = false] [
         let best-target min-one-of other patches in-radius disp-dist [10 - env]
+        ask patch-here [
+          set running-out (running-out + 1)
+        ]
         face best-target
         move-to best-target
+        ask best-target [
+          set running-in (running-in + 1)
+        ]
       ]
       ; They ARE dispersing...just to other perfect patches
       ; How do I force dispersal into 8s and 9s, without invoking crowdedness?
@@ -153,8 +173,14 @@ to dispersal
     if (avoid-crowds = false) and (env-sens = false) [
       ;; Random dispersal
       ask skimmers with [dominant? = false] [
+        ask patch-here [
+          set running-out (running-out + 1)
+        ]
         set heading random 360
         fd random disp-dist
+        ask patch-here [
+          set running-in (running-in + 1)
+        ]
       ]
     ]
 
@@ -214,7 +240,7 @@ to write-to-file
 
   ask patches [
     file-print (
-      word varpart-path "," pxcor "," pycor "," env "," (count skimmers-here)
+      word varpart-path "," pxcor "," pycor "," env "," (count skimmers-here) "," running-deaths "," running-births "," running-in "," running-out
       )
   ]
 
@@ -417,7 +443,7 @@ INPUTBOX
 193
 152
 varpart-path
-false-false-200
+false-false-197
 1
 0
 String
