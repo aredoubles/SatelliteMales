@@ -106,8 +106,8 @@ to dispersal
     ;; Radius needs to be unique for each individual at each time step, not global
 
   ask skimmers [
-    ; pd
-    set disp-dist ((random-poisson disp-kernel-mean) + 1)
+    pd
+    set disp-dist disp-kernel-mean
     ; The '+ 1' term is to avoid unwanted philopatry
   ]
 
@@ -153,8 +153,9 @@ to dispersal
     if (avoid-crowds = false) and (env-sens = true) [
       ;; Pick a good neighbor patch, even if it's crowded
       ;; This seems like a very poor strategy, ignore somehow?
-      ask skimmers with [dominant? = false] [
-        let best-target min-one-of other patches in-radius disp-dist [10 - env]
+      ask skimmers [
+      ;ask skimmers with [dominant? = false] [
+        let best-target min-one-of (other patches in-radius disp-dist) [10 - env]
         ask patch-here [
           set running-out (running-out + 1)
         ]
@@ -345,7 +346,7 @@ SWITCH
 243
 env-sens
 env-sens
-1
+0
 1
 -1000
 
@@ -443,7 +444,7 @@ INPUTBOX
 193
 152
 varpart-path
-false-false-197
+false-true-0
 1
 0
 String
@@ -821,7 +822,7 @@ NetLogo 5.3
 @#$#@#$#@
 @#$#@#$#@
 <experiments>
-  <experiment name="experiment" repetitions="50" runMetricsEveryStep="false">
+  <experiment name="experiment" repetitions="10" runMetricsEveryStep="false">
     <setup>setup</setup>
     <go>go</go>
     <final>write-to-file</final>
