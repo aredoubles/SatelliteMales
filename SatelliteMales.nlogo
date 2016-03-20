@@ -156,8 +156,8 @@ to dispersal
       ;ask skimmers [
       ask skimmers with [dominant? = false] [
         ;let best-target min-one-of (other patches in-radius disp-dist) [10 - env]
-        let searchrad (other patches) in-radius disp-dist
-        let best-target searchrad with-min [10 - env]
+        ;let searchrad (other patches) in-radius disp-dist
+        let best-target min-one-of neighbors [10 - env]
         ask patch-here [
           set running-out (running-out + 1)
         ]
