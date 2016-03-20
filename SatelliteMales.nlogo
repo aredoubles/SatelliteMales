@@ -23,9 +23,9 @@ to setup
   file-print ("run, xcor, ycor, env, abund, deaths, births, immig, emig")
 
   ask patches [
-    set env random 11 ;; Number of suitability bins/levels
+    set env random-float 11 ;; Number of suitability bins/levels
     set pcolor scale-color 53 env -10 30
-    if env = 10 [
+    if env >= 10 [
       set pcolor red + 1
     ]
     set running-abund 0
@@ -38,7 +38,7 @@ to setup
     ;; A higher steepness value means that more breeding occurs in envs with value 9 and 10
     set repro-odds ( 1 / (1 + exp (-(breeding-steepness) * (env - 8) ) ) )
   ]
-  set good-patches patches with [env = 10]
+  set good-patches patches with [env >= 10]
 
   create-skimmers 100 [
     move-to one-of good-patches
@@ -153,9 +153,11 @@ to dispersal
     if (avoid-crowds = false) and (env-sens = true) [
       ;; Pick a good neighbor patch, even if it's crowded
       ;; This seems like a very poor strategy, ignore somehow?
-      ask skimmers [
-      ;ask skimmers with [dominant? = false] [
-        let best-target min-one-of (other patches in-radius disp-dist) [10 - env]
+      ;ask skimmers [
+      ask skimmers with [dominant? = false] [
+        ;let best-target min-one-of (other patches in-radius disp-dist) [10 - env]
+        let searchrad (other patches) in-radius disp-dist
+        let best-target searchrad with-min [10 - env]
         ask patch-here [
           set running-out (running-out + 1)
         ]
